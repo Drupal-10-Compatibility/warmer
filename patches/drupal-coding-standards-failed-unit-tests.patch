@@ -145,10 +145,10 @@ index e548427..8cbde64 100644
  
      return $form;
 diff --git a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
-index 52e4b9f..a411215 100644
+index 52e4b9f..2d8d0d4 100644
 --- a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 +++ b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
-@@ -33,12 +33,17 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -33,7 +33,10 @@ class EnqueueFormTest extends BrowserTestBase {
     */
    private $adminUser;
  
@@ -160,15 +160,7 @@ index 52e4b9f..a411215 100644
      parent::setUp();
      $this->adminUser = $this->createUser(['administer site configuration']);
      NodeType::create([
-       'type' => 'article',
--    ])->save();
-+    ])
-+    ->accessCheck(FALSE)
-+    ->save();
-   }
- 
-   /**
-@@ -57,7 +62,7 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -57,7 +60,7 @@ class EnqueueFormTest extends BrowserTestBase {
      ])->save();
      $this->drupalLogin($this->adminUser);
      $this->drupalGet(Url::fromRoute('warmer.enqueue'));
@@ -177,7 +169,7 @@ index 52e4b9f..a411215 100644
      // Check the number of items being reported as enqueued.
      $elements = $this->cssSelect('div.messages');
      $element = reset($elements);
-@@ -87,6 +92,7 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -87,6 +90,7 @@ class EnqueueFormTest extends BrowserTestBase {
  
    /**
     * Creates test content for richer testing.
@@ -185,14 +177,13 @@ index 52e4b9f..a411215 100644
     * @throws \Drupal\Core\Entity\EntityStorageException
     */
    private function createTestContent() {
-@@ -94,6 +100,9 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -94,6 +98,8 @@ class EnqueueFormTest extends BrowserTestBase {
        'type' => 'article',
        'title' => 'Test Article 1',
        'status' => NodeInterface::PUBLISHED,
 -    ])->save();
-+    ])
-+    ->accessCheck(TRUE)
-+    ->save();
++    ])->accessCheck(TRUE)
++      ->save();
    }
 +
  }
