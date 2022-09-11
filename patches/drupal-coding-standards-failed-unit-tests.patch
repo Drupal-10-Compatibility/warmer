@@ -1,0 +1,428 @@
+diff --git a/modules/warmer_cdn/src/Plugin/warmer/CdnWarmer.php b/modules/warmer_cdn/src/Plugin/warmer/CdnWarmer.php
+index 81ff0b9..284bc9e 100644
+--- a/modules/warmer_cdn/src/Plugin/warmer/CdnWarmer.php
++++ b/modules/warmer_cdn/src/Plugin/warmer/CdnWarmer.php
+@@ -105,7 +105,7 @@ final class CdnWarmer extends WarmerPluginBase {
+     $header_lines = $configuration['headers'];
+     // Parse headers.
+     return array_reduce($header_lines, function ($carry, $header_line) {
+-      list($name, $value_line) = array_map('trim', explode(':', $header_line));
++      [$name, $value_line] = array_map('trim', explode(':', $header_line));
+       $values = array_map('trim', explode(';', $value_line));
+       $values = array_filter($values);
+       $values = count($values) === 1 ? reset($values) : $values;
+@@ -157,7 +157,7 @@ final class CdnWarmer extends WarmerPluginBase {
+       '#type' => 'checkbox',
+       '#title' => $this->t('Enable SSL verification'),
+       '#description' => $this->t('Enable SSL verification. Recommended to keep it checked for security reasons.'),
+-      '#default_value' => isset($configuration['verify']) ? $configuration['verify'] : TRUE,
++      '#default_value' => $configuration['verify'] ?? TRUE,
+     ];
+     $form['maxConcurrentRequests'] = [
+       '#type' => 'number',
+diff --git a/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php b/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php
+index 6906a49..18b911c 100644
+--- a/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php
++++ b/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php
+@@ -15,7 +15,7 @@ trait UserInputParserTrait {
+    *
+    * @param array $values
+    *   The collection of values.
+-   * @param $key
++   * @param mixed $key
+    *   Indicates the element to parse.
+    *
+    * @return array
+@@ -67,11 +67,16 @@ trait UserInputParserTrait {
+     try {
+       return Url::fromUri($user_input, ['absolute' => TRUE])->toString();
+     }
+-    catch (\InvalidArgumentException $e) {}
++    catch (\InvalidArgumentException $e) {
++
++    }
+     try {
+       return Url::fromUserInput($user_input, ['absolute' => TRUE])->toString();
+     }
+-    catch (\InvalidArgumentException $e) {}
++    catch (\InvalidArgumentException $e) {
++
++    }
+     return $user_input;
+   }
++
+ }
+diff --git a/modules/warmer_cdn/tests/src/Functional/SitemapWarmerTest.php b/modules/warmer_cdn/tests/src/Functional/SitemapWarmerTest.php
+index 48cf5f8..1d71430 100644
+--- a/modules/warmer_cdn/tests/src/Functional/SitemapWarmerTest.php
++++ b/modules/warmer_cdn/tests/src/Functional/SitemapWarmerTest.php
+@@ -3,8 +3,6 @@
+ namespace Drupal\Tests\warmer_cdn\Functional;
+ 
+ use Drupal\Core\File\FileSystem;
+-use Drupal\Core\Queue\QueueInterface;
+-use Drupal\Core\Url;
+ use Drupal\file\Entity\File;
+ use Drupal\node\NodeInterface;
+ use Drupal\path_alias\PathAliasStorage;
+@@ -49,7 +47,10 @@ final class SitemapWarmerTest extends BrowserTestBase {
+    */
+   private $adminUser;
+ 
+-  protected function setUp() {
++  /**
++   * {@inheritDoc}
++   */
++  protected function setUp(): void {
+     parent::setUp();
+     $this->adminUser = $this->drupalCreateUser(['administer site configuration']);
+     $this->drupalLogin($this->adminUser);
+@@ -96,7 +97,7 @@ final class SitemapWarmerTest extends BrowserTestBase {
+     // Use the plugin instance to build the IDs.
+     $manager = \Drupal::service('plugin.manager.warmer');
+     assert($manager instanceof WarmerPluginManager);
+-    list($warmer) = $manager->getWarmers(['sitemap']);
++    [$warmer] = $manager->getWarmers(['sitemap']);
+     $urls = [];
+     $ids = [NULL];
+     while ($ids = $warmer->buildIdsBatch(end($ids))) {
+@@ -140,7 +141,7 @@ final class SitemapWarmerTest extends BrowserTestBase {
+     $urlset->setAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
+     $urlset->setAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
+     $index = 1;
+-    foreach ($nodes as $alias => $node) {
++    foreach ($nodes as $node) {
+       assert($node instanceof NodeInterface);
+       $url = $xml->createElement('url');
+       if ($index !== 4) {
+diff --git a/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php b/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
+index e548427..8cbde64 100644
+--- a/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
++++ b/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
+@@ -3,7 +3,6 @@
+ namespace Drupal\warmer_entity\Plugin\warmer;
+ 
+ use Drupal\Component\Plugin\Exception\PluginException;
+-use Drupal\Core\Annotation\Translation;
+ use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
+ use Drupal\Core\Database\DatabaseExceptionWrapper;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
+@@ -81,7 +80,7 @@ final class EntityWarmer extends WarmerPluginBase {
+    */
+   public function loadMultiple(array $ids = []) {
+     $ids_per_type = array_reduce($ids, function ($carry, $id) {
+-      list($entity_type_id, $entity_id) = explode(':', $id);
++      [$entity_type_id, $entity_id] = explode(':', $id);
+       if (empty($carry[$entity_type_id])) {
+         $carry[$entity_type_id] = [];
+       }
+@@ -119,7 +118,8 @@ final class EntityWarmer extends WarmerPluginBase {
+ 
+   /**
+    * {@inheritdoc}
+-   * TODO: This is a naive implementation.
++   *
++   * @todo This is a naive implementation.
+    */
+   public function buildIdsBatch($cursor) {
+     $configuration = $this->getConfiguration();
+@@ -127,7 +127,7 @@ final class EntityWarmer extends WarmerPluginBase {
+       $entity_bundle_pairs = array_filter(array_values($configuration['entity_types']));
+       sort($entity_bundle_pairs);
+       $this->iids = array_reduce($entity_bundle_pairs, function ($iids, $entity_bundle_pair) {
+-        list($entity_type_id, $bundle) = explode(':', $entity_bundle_pair);
++        [$entity_type_id, $bundle] = explode(':', $entity_bundle_pair);
+         $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+         $bundle_key = $entity_type->getKey('bundle');
+         $id_key = $entity_type->getKey('id');
+@@ -182,7 +182,7 @@ final class EntityWarmer extends WarmerPluginBase {
+       '#options' => $options,
+       '#default_value' => empty($configuration['entity_types']) ? [] : $configuration['entity_types'],
+       '#multiple' => TRUE,
+-      '#attributes' => ['style' => 'min-height: 60em;']
++      '#attributes' => ['style' => 'min-height: 60em;'],
+     ];
+ 
+     return $form;
+diff --git a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
+index 52e4b9f..2adc255 100644
+--- a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
++++ b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
+@@ -19,7 +19,7 @@ class EnqueueFormTest extends BrowserTestBase {
+   /**
+    * {@inheritdoc}
+    */
+-  protected $defaultTheme = 'classy';
++  protected $defaultTheme = 'stable';
+ 
+   /**
+    * {@inheritdoc}
+@@ -33,7 +33,10 @@ class EnqueueFormTest extends BrowserTestBase {
+    */
+   private $adminUser;
+ 
+-  protected function setUp() {
++  /**
++   * {@inheritDoc}
++   */
++  protected function setUp(): void {
+     parent::setUp();
+     $this->adminUser = $this->createUser(['administer site configuration']);
+     NodeType::create([
+@@ -57,7 +60,7 @@ class EnqueueFormTest extends BrowserTestBase {
+     ])->save();
+     $this->drupalLogin($this->adminUser);
+     $this->drupalGet(Url::fromRoute('warmer.enqueue'));
+-    $this->submitForm(['warmers[entity]' => true], 'Warm Caches');
++    $this->submitForm(['warmers[entity]' => TRUE], 'Warm Caches');
+     // Check the number of items being reported as enqueued.
+     $elements = $this->cssSelect('div.messages');
+     $element = reset($elements);
+@@ -87,6 +90,7 @@ class EnqueueFormTest extends BrowserTestBase {
+ 
+   /**
+    * Creates test content for richer testing.
++   *
+    * @throws \Drupal\Core\Entity\EntityStorageException
+    */
+   private function createTestContent() {
+@@ -96,4 +100,5 @@ class EnqueueFormTest extends BrowserTestBase {
+       'status' => NodeInterface::PUBLISHED,
+     ])->save();
+   }
++
+ }
+diff --git a/src/Commands/WarmerCommands.php b/src/Commands/WarmerCommands.php
+index 03e685d..eed20b1 100644
+--- a/src/Commands/WarmerCommands.php
++++ b/src/Commands/WarmerCommands.php
+@@ -86,7 +86,7 @@ class WarmerCommands extends DrushCommands {
+    *
+    * @throws \Exception
+    */
+-  public function enqueue(array $warmer_ids, $options = ['run-queue' => FALSE]) {
++  public function enqueue(array $warmer_ids, array $options = ['run-queue' => FALSE]) {
+     $warmer_ids = array_unique(StringUtils::csvToArray($warmer_ids));
+     $warmers = $this->warmerManager->getWarmers($warmer_ids);
+     $batch_count = 0;
+@@ -112,13 +112,14 @@ class WarmerCommands extends DrushCommands {
+     }
+     $this->logger()->success(dt('Warming caches in @count batches from the "warmer" queue.', ['@count' => $batch_count]));
+     $this->queueCommands->run('warmer', ['time-limit' => static::VERY_HIGH_NUMBER]);
+-    return;
+   }
+ 
+   /**
+    * List of all available warmer plugins.
+    *
+-   * @param array $options An associative array of options whose values come from cli, aliases, config, etc.
++   * @param array $options
++   *   Associative array of options whose values come from cli, aliases, config,
++   *   etc.
+    *
+    * @field-labels
+    *   id: ID
+@@ -132,8 +133,9 @@ class WarmerCommands extends DrushCommands {
+    * @aliases warmer-list
+    *
+    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
++   *   Object containing row of fields to return.
+    */
+-  public function list($options = ['format' => 'table']) {
++  public function list(array $options = ['format' => 'table']) {
+     $rows = array_map(function (WarmerPluginBase $warmer) {
+       $definition = $warmer->getPluginDefinition();
+       return [
+@@ -150,14 +152,19 @@ class WarmerCommands extends DrushCommands {
+   /**
+    * Validate that queue permission exists.
+    *
+-   * Annotation value should be the name of the argument/option containing the name.
++   * Annotation value should be the name of the argument/option containing the
++   * name.
+    *
+-   * @hook validate @validate-warmer
+    * @param \Consolidation\AnnotatedCommand\CommandData $commandData
+-   * @return \Consolidation\AnnotatedCommand\CommandError|NULL
++   *   CommandData object for command execution.
++   *
++   * @return \Consolidation\AnnotatedCommand\CommandError|null
++   *   Command Error, or null if no error.
++   *
++   * @hook validate @validate-warmer
+    */
+   public function validateWarmerNames(CommandData $commandData) {
+-    $arg_name = $commandData->annotationData()->get('validate-warmer', null);
++    $arg_name = $commandData->annotationData()->get('validate-warmer', NULL);
+     $warmer_ids = $commandData->input()->getArgument($arg_name);
+     $warmer_ids = StringUtils::csvToArray($warmer_ids);
+     $definitions = $this->warmerManager->getDefinitions();
+diff --git a/src/Form/EnqueueForm.php b/src/Form/EnqueueForm.php
+index fcb3eac..7972b85 100644
+--- a/src/Form/EnqueueForm.php
++++ b/src/Form/EnqueueForm.php
+@@ -9,6 +9,7 @@ use Drupal\Core\Url;
+ use Drupal\warmer\HookImplementations;
+ use Drupal\warmer\Plugin\WarmerPluginBase;
+ use Drupal\warmer\Plugin\WarmerPluginManager;
++use Drupal\warmer\QueueManager;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+ use Symfony\Component\Routing\Exception\RouteNotFoundException;
+ 
+@@ -68,7 +69,7 @@ final class EnqueueForm extends FormBase {
+    * @param \Drupal\warmer\QueueManager $queue_manager
+    *   The queue manager.
+    */
+-  public function setQueueManager($queue_manager) {
++  public function setQueueManager(QueueManager $queue_manager) {
+     $this->queueManager = $queue_manager;
+   }
+ 
+@@ -129,7 +130,8 @@ final class EnqueueForm extends FormBase {
+         '#url' => Url::fromRoute('queue_ui.overview_form'),
+       ];
+     }
+-    catch (RouteNotFoundException $e) {}
++    catch (RouteNotFoundException $e) {
++    }
+ 
+     return $form;
+   }
+diff --git a/src/Form/SettingsForm.php b/src/Form/SettingsForm.php
+index 8f075b7..91cdd46 100644
+--- a/src/Form/SettingsForm.php
++++ b/src/Form/SettingsForm.php
+@@ -109,7 +109,7 @@ final class SettingsForm extends ConfigFormBase {
+     $message = $this->t('Settings saved for plugin(s): %names', [
+       '%names' => implode(', ', array_map(function (WarmerPluginBase $warmer) {
+         return $warmer->getPluginDefinition()['label'];
+-      }, $warmers))
++      }, $warmers)),
+     ]);
+     $this->messenger()->addStatus($message);
+   }
+diff --git a/src/HookImplementations.php b/src/HookImplementations.php
+index b3f6af0..23d3dce 100644
+--- a/src/HookImplementations.php
++++ b/src/HookImplementations.php
+@@ -67,7 +67,7 @@ class HookImplementations {
+    *
+    * @throws \Drupal\Component\Plugin\Exception\PluginException
+    */
+-  public static function warmBatch(array $ids, $warmer_id) {
++  public static function warmBatch(mixed $ids, $warmer_id) {
+     /** @var \Drupal\warmer\Plugin\WarmerPluginManager $warmer_manager */
+     $warmer_manager = \Drupal::service('plugin.manager.warmer');
+     /** @var \Drupal\warmer\Plugin\WarmerInterface $warmer */
+diff --git a/src/Plugin/WarmerInterface.php b/src/Plugin/WarmerInterface.php
+index 1a65487..379d35f 100644
+--- a/src/Plugin/WarmerInterface.php
++++ b/src/Plugin/WarmerInterface.php
+@@ -4,6 +4,9 @@ namespace Drupal\warmer\Plugin;
+ 
+ use Drupal\Core\Form\SubformStateInterface;
+ 
++/**
++ * Warmer Interface.
++ */
+ interface WarmerInterface {
+ 
+   /**
+@@ -25,7 +28,7 @@ interface WarmerInterface {
+   /**
+    * Loads multiple items based on their IDs.
+    *
+-   * @param array
++   * @param array $ids
+    *   The item IDs.
+    *
+    * @return array
+diff --git a/src/Plugin/WarmerPluginBase.php b/src/Plugin/WarmerPluginBase.php
+index b05aa88..4d40d08 100644
+--- a/src/Plugin/WarmerPluginBase.php
++++ b/src/Plugin/WarmerPluginBase.php
+@@ -70,8 +70,8 @@ abstract class WarmerPluginBase extends PluginBase implements ContainerFactoryPl
+    */
+   public function getConfiguration() {
+     return [
+-        'id' => $this->getPluginId(),
+-      ] + $this->configuration + $this->defaultConfiguration();
++      'id' => $this->getPluginId(),
++    ] + $this->configuration + $this->defaultConfiguration();
+   }
+ 
+   /**
+diff --git a/src/Plugin/WarmerPluginManager.php b/src/Plugin/WarmerPluginManager.php
+index 8479a67..8e631b9 100644
+--- a/src/Plugin/WarmerPluginManager.php
++++ b/src/Plugin/WarmerPluginManager.php
+@@ -57,5 +57,4 @@ class WarmerPluginManager extends DefaultPluginManager {
+     });
+   }
+ 
+-
+ }
+diff --git a/src/QueueData.php b/src/QueueData.php
+index 03e152a..4bd5cb7 100644
+--- a/src/QueueData.php
++++ b/src/QueueData.php
+@@ -35,7 +35,7 @@ class QueueData {
+    *   The callback to call on dequeue.
+    * @param array $ids
+    *   The item IDs to process.
+-   * @param $warmer_id
++   * @param string $warmer_id
+    *   The warmer ID.
+    */
+   public function __construct(callable $callback, array $ids, $warmer_id) {
+@@ -44,7 +44,6 @@ class QueueData {
+     $this->warmerId = $warmer_id;
+   }
+ 
+-
+   /**
+    * Function to execute after claiming the item.
+    */
+diff --git a/src/QueueManager.php b/src/QueueManager.php
+index d86554a..9bd3f5c 100644
+--- a/src/QueueManager.php
++++ b/src/QueueManager.php
+@@ -22,7 +22,7 @@ class QueueManager {
+   /**
+    * Sets the queue to use to execute the cache warming operations.
+    *
+-   * @param \Drupal\Core\Queue\QueueFactory
++   * @param \Drupal\Core\Queue\QueueFactory $queue_factory
+    *   The queue factory.
+    * @param bool $is_reliable
+    *   Indicates if the queue should be reliable.
+diff --git a/tests/src/Unit/Plugin/QueueWorker/ItemWarmerTest.php b/tests/src/Unit/Plugin/QueueWorker/ItemWarmerTest.php
+index b18f262..bb49487 100644
+--- a/tests/src/Unit/Plugin/QueueWorker/ItemWarmerTest.php
++++ b/tests/src/Unit/Plugin/QueueWorker/ItemWarmerTest.php
+@@ -13,17 +13,23 @@ use Drupal\warmer\QueueData;
+ class ItemWarmerTest extends UnitTestCase {
+ 
+   /**
++   * Processes the items queued for warming.
++   *
+    * @var \Drupal\warmer\Plugin\QueueWorker\ItemWarmer
+    */
+   protected $sut;
+ 
+-  protected function setUp() {
++  /**
++   * {@inheritDoc}
++   */
++  protected function setUp(): void {
+     parent::setUp();
+     $this->sut = new ItemWarmer([], 'warmer', []);
+   }
+ 
+   /**
+-   * The data is processed when appropriate
++   * The data is processed when appropriate.
++   *
+    * @covers ::processItem
+    */
+   public function testProcessItem() {

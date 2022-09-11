@@ -115,7 +115,7 @@
         },
         "patches": {
             "drupal/warmer": {
-                "Drupal coding standards": "patches/drupal-coding-standards.patch"
+                "Drupal coding standards and unit test failures": "patches/drupal-coding-standards-failed-unit-tests.patch"
             }
         }
     },
