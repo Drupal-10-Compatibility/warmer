@@ -145,7 +145,7 @@ index e548427..8cbde64 100644
  
      return $form;
 diff --git a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
-index 52e4b9f..63ca51f 100644
+index 52e4b9f..e050ecf 100644
 --- a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 +++ b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 @@ -33,7 +33,10 @@ class EnqueueFormTest extends BrowserTestBase {
@@ -160,7 +160,7 @@ index 52e4b9f..63ca51f 100644
      parent::setUp();
      $this->adminUser = $this->createUser(['administer site configuration']);
      NodeType::create([
-@@ -57,7 +60,7 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -57,13 +60,13 @@ class EnqueueFormTest extends BrowserTestBase {
      ])->save();
      $this->drupalLogin($this->adminUser);
      $this->drupalGet(Url::fromRoute('warmer.enqueue'));
@@ -169,6 +169,13 @@ index 52e4b9f..63ca51f 100644
      // Check the number of items being reported as enqueued.
      $elements = $this->cssSelect('div.messages');
      $element = reset($elements);
+     $this->assertEquals($element->getText(), 'Status message 1 items enqueued for cache warming.');
+     // Ensure there is one batch in the queue.
+-    $queue = \Drupal::service('queue')->get('warmer');
++    $queue = \Drupal::service('queue')->get('warmer')->accessCheck(FALSE);
+     assert($queue instanceof QueueInterface);
+     $this->assertSame(1, $queue->numberOfItems(), 'Correct number of batches in the queue.');
+   }
 @@ -87,6 +90,7 @@ class EnqueueFormTest extends BrowserTestBase {
  
    /**
