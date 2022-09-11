@@ -17,11 +17,12 @@
     "require": {
         "composer/installers": "^1.9",
         "cweagans/composer-patches": "^1.7",
+        "drupal/classy": "^1.0",
         "drupal/core": "9.5.x-dev",
         "drupal/core-composer-scaffold": "9.5.x-dev",
         "drupal/core-recommended": "9.5.x-dev",
-        "drupal/warmer": "2.x-dev",
         "drupal/upgrade_status": "^3.14",
+        "drupal/warmer": "2.x-dev",
         "drush/drush": "^11.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.0"
