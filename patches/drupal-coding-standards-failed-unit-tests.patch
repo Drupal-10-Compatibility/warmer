@@ -145,7 +145,7 @@ index e548427..8cbde64 100644
  
      return $form;
 diff --git a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
-index 52e4b9f..2d8d0d4 100644
+index 52e4b9f..63ca51f 100644
 --- a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 +++ b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 @@ -33,7 +33,10 @@ class EnqueueFormTest extends BrowserTestBase {
@@ -177,13 +177,9 @@ index 52e4b9f..2d8d0d4 100644
     * @throws \Drupal\Core\Entity\EntityStorageException
     */
    private function createTestContent() {
-@@ -94,6 +98,8 @@ class EnqueueFormTest extends BrowserTestBase {
-       'type' => 'article',
-       'title' => 'Test Article 1',
+@@ -96,4 +100,5 @@ class EnqueueFormTest extends BrowserTestBase {
        'status' => NodeInterface::PUBLISHED,
--    ])->save();
-+    ])->accessCheck(TRUE)
-+      ->save();
+     ])->save();
    }
 +
  }
