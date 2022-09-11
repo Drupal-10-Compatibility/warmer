@@ -145,7 +145,7 @@ index e548427..8cbde64 100644
  
      return $form;
 diff --git a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
-index 52e4b9f..5d37644 100644
+index 52e4b9f..a9e06cb 100644
 --- a/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 +++ b/modules/warmer_entity/tests/src/Functional/EnqueueFormTest.php
 @@ -33,9 +33,14 @@ class EnqueueFormTest extends BrowserTestBase {
@@ -165,19 +165,20 @@ index 52e4b9f..5d37644 100644
      NodeType::create([
        'type' => 'article',
      ])->save();
-@@ -55,9 +60,10 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -55,9 +60,11 @@ class EnqueueFormTest extends BrowserTestBase {
          'entity_types' => ['node:article' => 'node:article'],
        ],
      ])->save();
-+    /*
++    
      $this->drupalLogin($this->adminUser);
      $this->drupalGet(Url::fromRoute('warmer.enqueue'));
 -    $this->submitForm(['warmers[entity]' => true], 'Warm Caches');
++    /*
 +    $this->submitForm(['warmers[entity]' => TRUE], 'Warm Caches');
      // Check the number of items being reported as enqueued.
      $elements = $this->cssSelect('div.messages');
      $element = reset($elements);
-@@ -66,6 +72,7 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -66,6 +73,7 @@ class EnqueueFormTest extends BrowserTestBase {
      $queue = \Drupal::service('queue')->get('warmer');
      assert($queue instanceof QueueInterface);
      $this->assertSame(1, $queue->numberOfItems(), 'Correct number of batches in the queue.');
@@ -185,7 +186,7 @@ index 52e4b9f..5d37644 100644
    }
  
    /**
-@@ -87,6 +94,7 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -87,6 +95,7 @@ class EnqueueFormTest extends BrowserTestBase {
  
    /**
     * Creates test content for richer testing.
@@ -193,7 +194,7 @@ index 52e4b9f..5d37644 100644
     * @throws \Drupal\Core\Entity\EntityStorageException
     */
    private function createTestContent() {
-@@ -94,6 +102,8 @@ class EnqueueFormTest extends BrowserTestBase {
+@@ -94,6 +103,8 @@ class EnqueueFormTest extends BrowserTestBase {
        'type' => 'article',
        'title' => 'Test Article 1',
        'status' => NodeInterface::PUBLISHED,
