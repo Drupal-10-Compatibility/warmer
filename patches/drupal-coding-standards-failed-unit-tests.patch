@@ -20,6 +20,19 @@ index 81ff0b9..284bc9e 100644
      ];
      $form['maxConcurrentRequests'] = [
        '#type' => 'number',
+diff --git a/modules/warmer_cdn/src/Plugin/warmer/SitemapWarmer.php b/modules/warmer_cdn/src/Plugin/warmer/SitemapWarmer.php
+index 7819ce4..920e5fa 100644
+--- a/modules/warmer_cdn/src/Plugin/warmer/SitemapWarmer.php
++++ b/modules/warmer_cdn/src/Plugin/warmer/SitemapWarmer.php
+@@ -83,7 +83,7 @@ final class SitemapWarmer extends WarmerPluginBase {
+    * {@inheritdoc}
+    */
+   public function loadMultiple(array $ids = []) {
+-    return $this->cdnWarmer()->loadMultiple($ids);
++    return $this->cdnWarmer()->loadMultiple($ids)->accessCheck(TRUE);
+   }
+ 
+   /**
 diff --git a/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php b/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php
 index 6906a49..18b911c 100644
 --- a/modules/warmer_cdn/src/Plugin/warmer/UserInputParserTrait.php
@@ -326,10 +339,10 @@ index 8f075b7..91cdd46 100644
      $this->messenger()->addStatus($message);
    }
 diff --git a/src/HookImplementations.php b/src/HookImplementations.php
-index b3f6af0..23d3dce 100644
+index b3f6af0..c0dade3 100644
 --- a/src/HookImplementations.php
 +++ b/src/HookImplementations.php
-@@ -67,7 +67,7 @@ class HookImplementations {
+@@ -67,12 +67,12 @@ class HookImplementations {
     *
     * @throws \Drupal\Component\Plugin\Exception\PluginException
     */
@@ -338,6 +351,12 @@ index b3f6af0..23d3dce 100644
      /** @var \Drupal\warmer\Plugin\WarmerPluginManager $warmer_manager */
      $warmer_manager = \Drupal::service('plugin.manager.warmer');
      /** @var \Drupal\warmer\Plugin\WarmerInterface $warmer */
+     $warmer = $warmer_manager->createInstance($warmer_id);
+-    $items = $warmer->loadMultiple($ids);
++    $items = $warmer->loadMultiple($ids)->accessCheck(TRUE);
+     return $warmer->warmMultiple($items);
+   }
+ 
 diff --git a/src/Plugin/WarmerInterface.php b/src/Plugin/WarmerInterface.php
 index 1a65487..379d35f 100644
 --- a/src/Plugin/WarmerInterface.php
