@@ -96,7 +96,7 @@ index 48cf5f8..1d71430 100644
        $url = $xml->createElement('url');
        if ($index !== 4) {
 diff --git a/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php b/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
-index e548427..8cbde64 100644
+index e548427..c7acff1 100644
 --- a/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
 +++ b/modules/warmer_entity/src/Plugin/warmer/EntityWarmer.php
 @@ -3,7 +3,6 @@
@@ -116,6 +116,17 @@ index e548427..8cbde64 100644
        if (empty($carry[$entity_type_id])) {
          $carry[$entity_type_id] = [];
        }
+@@ -93,8 +92,8 @@ final class EntityWarmer extends WarmerPluginBase {
+       try {
+         $output += $this->entityTypeManager
+           ->getStorage($entity_type_id)
+-          ->loadMultiple($entity_ids);
+-
++          ->loadMultiple($entity_ids)
++          ->accessCheck(TRUE);
+         // \Drupal\Core\Entity\EntityStorageBase::buildCacheId() is protected,
+         // so we blindly reset the whole static cache instead of specific IDs.
+         $this->entityMemoryCache->deleteAll();
 @@ -119,7 +118,8 @@ final class EntityWarmer extends WarmerPluginBase {
  
    /**
