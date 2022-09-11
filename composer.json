@@ -114,6 +114,9 @@
             "drupal/core": "-p2"
         },
         "patches": {
+            "drupal/warmer": {
+                "Drupal coding standards": "patches/drupal-coding-standards.patch"
+            }
         }
     },
     "autoload": {
