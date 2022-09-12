@@ -4,16 +4,29 @@
     "type": "project",
     "license": "GPL-2.0-or-later",
     "homepage": "https://www.drupal.org/project/warmer",
-    "repositories": [
-        {
+    "repositories": {
+        "drupal/warmer": {
+            "type": "package",
+            "package": {
+                "name": "drupal/warmer",
+                "version": "dev-main",
+                "type": "drupal-module",
+                "source": {
+                    "url": "https://git.drupalcode.org/issue/warmer-3309120.git",
+                    "type": "git",
+                    "reference": "drupal/warmer"
+                }
+            }
+        },
+        "drupal": {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
         },
-        {
+        "asset-packagist": {
             "type": "composer",
             "url": "https://asset-packagist.org"
         }
-    ],
+    },
     "require": {
         "composer/installers": "^1.9",
         "cweagans/composer-patches": "^1.7",
@@ -22,7 +35,7 @@
         "drupal/core-composer-scaffold": "9.5.x-dev",
         "drupal/core-recommended": "9.5.x-dev",
         "drupal/upgrade_status": "^3.14",
-        "drupal/warmer": "2.x-dev",
+        "drupal/warmer": "dev-main#09c7782838f5a64303666c8f6b3cadf5c59dc00f",
         "drush/drush": "^11.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.0"
@@ -114,11 +127,7 @@
         "patchLevel": {
             "drupal/core": "-p2"
         },
-        "patches": {
-            "drupal/warmer": {
-                "Drupal coding standards and unit test failures": "patches/drupal-coding-standards-failed-unit-tests.patch"
-            }
-        }
+        "patches": {}
     },
     "autoload": {
         "psr-4": {
