@@ -32,7 +32,7 @@
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "10.1.x-dev",
         "drupal/core-recommended": "10.1.x-dev",
-        "drupal/warmer": "2.x-dev#59f25e33ffdb31e45c9b388b7394079ff3a5e871",
+        "drupal/warmer": "2.x-dev#e571b23",
         "drush/drush": "^11.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "vipnytt/sitemapparser": "^1.0",
@@ -125,7 +125,8 @@
         "patchLevel": {
             "drupal/core": "-p2"
         },
-        "patches": {}
+        "patches": {
+        }
     },
     "autoload": {
         "psr-4": {
