@@ -32,7 +32,7 @@
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "10.1.x-dev",
         "drupal/core-recommended": "10.1.x-dev",
-        "drupal/warmer": "2.x-dev#f6fdb5e6cec41d00d67f1405d62e39a49e0d11c3",
+        "drupal/warmer": "2.x-dev#59f25e33ffdb31e45c9b388b7394079ff3a5e871",
         "drush/drush": "^11.0",
         "oomphinc/composer-installers-extender": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.0"
